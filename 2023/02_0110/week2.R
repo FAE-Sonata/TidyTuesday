@@ -30,8 +30,6 @@ count_site_data$loc_id %>% unique %>% length
 any(!(PFW_2021_public$loc_id %in% count_site_data$loc_id))
 sum(PFW_2021_public$loc_id %in% count_site_data$loc_id, na.rm=T) / nrow(PFW_2021_public)
 
-individual_maps<-ggplot(PFW_2021_public, aes(fill=how_many))
-
 setnames(PFW_2021_public, c("latitude", "longitude"), c("lat", "long"))
 
 PFW_2021_public_cut<-PFW_2021_public[,.(loc_id, lat, long, how_many)]
@@ -42,7 +40,7 @@ ggplot() +
   geom_polygon(data=world,
                aes(x=long, y = lat, group = group), fill="grey", alpha=0.3) +
   geom_point(data=PFW_2021_public_cut, aes(x=long, y=lat, colour=how_many)) +
-  scale_x_continuous(-180,-180) + scale_y_continuous(-90,90) + coord_map()
+  scale_x_continuous(-180,180) + scale_y_continuous(-90,90) + coord_map()
 
 PFW_2021_public[,country:=str_sub(subnational1_code, end=2)]
 PFW_2021_public[!(country %in% COLLECTED_REGIONS),]
@@ -65,3 +63,12 @@ ggplot() +
   geom_point(data=PFW_2021_public[long >= SEMIARID_LIMIT,] , aes(x=long, y=lat, colour=how_many)) +
   scale_x_continuous(SEMIARID_LIMIT, US_CA_LIMITS$long[2]) +
   scale_y_continuous(US_CA_LIMITS$lat[1], US_CA_LIMITS$lat[2]) + coord_map()
+
+# NY only
+ggplot() +
+  geom_polygon(data=world[region %in% COLLECTED_REGIONS,],
+               aes(x=long, y = lat, group = group), fill="grey", alpha=0.3) +
+  geom_point(data=PFW_2021_public[subnational1_code == "US-NY",],
+             aes(x=long, y=lat, colour=how_many)) +
+  scale_x_continuous(-80, -65) +
+  scale_y_continuous(40, 46) + coord_map()
