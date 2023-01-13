@@ -27,42 +27,35 @@ load("2023/02_0110/tues.RData")
 PFW_2021_public$loc_id %>% unique %>% length
 count_site_data$loc_id %>% unique %>% length
 
+PFW_2021_public$species_code %>% unique %>% length
+
 any(!(PFW_2021_public$loc_id %in% count_site_data$loc_id))
 sum(PFW_2021_public$loc_id %in% count_site_data$loc_id, na.rm=T) / nrow(PFW_2021_public)
 
 setnames(PFW_2021_public, c("latitude", "longitude"), c("lat", "long"))
-
-PFW_2021_public_cut<-PFW_2021_public[,.(loc_id, lat, long, how_many)]
 
 # search for nonsensical geo-points
 world<-map_data("world") %>% as.data.table
 ggplot() +
   geom_polygon(data=world,
                aes(x=long, y = lat, group = group), fill="grey", alpha=0.3) +
-  geom_point(data=PFW_2021_public_cut, aes(x=long, y=lat, colour=how_many)) +
+  geom_point(data=PFW_2021_public, aes(x=long, y=lat, colour=how_many)) +
   scale_x_continuous(-180,180) + scale_y_continuous(-90,90) + coord_map()
-
-PFW_2021_public[,country:=str_sub(subnational1_code, end=2)]
-PFW_2021_public[!(country %in% COLLECTED_REGIONS),]
-PFW_2021_public[lat < 0, `:=`(lat=-lat, long=-long, subnational1_code="US-GA",
-                              country="US")] # 1 row
-any(PFW_2021_public$lat < 0)
-PFW_2021_public<-PFW_2021_public[country %in% COLLECTED_REGIONS,] # removes about 23 entries
 
 ggplot() +
   geom_polygon(data=world[region %in% COLLECTED_REGIONS,],
                aes(x=long, y = lat, group = group), fill="grey", alpha=0.3) +
   geom_point(data=PFW_2021_public, aes(x=long, y=lat, colour=how_many)) +
-  scale_x_continuous(US_CA_LIMITS$long[1], US_CA_LIMITS$long[2]) +
-  scale_y_continuous(US_CA_LIMITS$lat[1], US_CA_LIMITS$lat[2]) + coord_map()
+  scale_x_continuous(min(US_CA_LIMITS$long), max(US_CA_LIMITS$long)) +
+  scale_y_continuous(min(US_CA_LIMITS$lat[1]), max(US_CA_LIMITS$lat)) + coord_map()
 
 SEMIARID_LIMIT<- -100
 ggplot() +
   geom_polygon(data=world[region %in% COLLECTED_REGIONS,],
                aes(x=long, y = lat, group = group), fill="grey", alpha=0.3) +
   geom_point(data=PFW_2021_public[long >= SEMIARID_LIMIT,] , aes(x=long, y=lat, colour=how_many)) +
-  scale_x_continuous(SEMIARID_LIMIT, US_CA_LIMITS$long[2]) +
-  scale_y_continuous(US_CA_LIMITS$lat[1], US_CA_LIMITS$lat[2]) + coord_map()
+  scale_x_continuous(SEMIARID_LIMIT, max(US_CA_LIMITS$long)) +
+  scale_y_continuous(min(US_CA_LIMITS$lat[1]), max(US_CA_LIMITS$lat)) + coord_map()
 
 # NY only
 ggplot() +

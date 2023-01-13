@@ -12,4 +12,4 @@ PFW_2021_public[!(country %in% COLLECTED_REGIONS),]
 PFW_2021_public[lat < 0, `:=`(lat=-lat, long=-long, subnational1_code="US-GA",
                               country="US")] # 1 row that was input in the "SE" quad-sphere
 any(PFW_2021_public$lat < 0)
-PFW_2021_public<-PFW_2021_public[country %in% COLLECTED_REGIONS,]
+PFW_2021_public<-PFW_2021_public[country %in% COLLECTED_REGIONS,] # removes about 23 entries
